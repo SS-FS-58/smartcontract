@@ -79,8 +79,8 @@ contract HowlV1 is ERC20, Authorizable {
     // "READ" Functions
     // How much is required to be fed to level up per kg
 
-    function feedLevelingRate(uint256 kg) public view returns (uint256) {
-        // need to divide the kg by 100, and make sure the feed level is at 18 decimals
+    function meetLevelingRate(uint256 kg) public view returns (uint256) {
+        // need to divide the kg by 100, and make sure the meet level is at 18 decimals
         return LEVELING_BASE * ((kg / 100)**LEVELING_RATE);
     }
 
@@ -158,7 +158,7 @@ contract HowlV1 is ERC20, Authorizable {
     //     uint256 lastSkippedTs;
     //     uint256 eatenAmount;
     //     uint256 cooldownTs;
-    //     uint256 requireFeedAmount;
+    //     uint256 requireMeetAmount;
     // }
 
     // function getWolf(uint256 tokenId) public view returns (WolfObj memory) {
@@ -170,7 +170,7 @@ contract HowlV1 is ERC20, Authorizable {
     //             c.lastSkippedTs,
     //             c.eatenAmount,
     //             c.cooldownTs,
-    //             feedLevelingRate(c.kg)
+    //             meetLevelingRate(c.kg)
     //         );
     // }
 
@@ -306,11 +306,11 @@ contract HowlV1 is ERC20, Authorizable {
         // require(x.ownerOf(wolfId) == msg.sender, "NOT OWNER");
 
         // check: wolf has eaten enough...
-        require(c.eatenAmount >= feedLevelingRate(c.kg), "MORE FOOD REQD");
+        require(c.eatenAmount >= meetLevelingRate(c.kg), "MORE FOOD REQD");
         // check: cooldown has passed...
         require(block.timestamp >= c.cooldownTs, "COOLDOWN NOT MET");
 
-        // increase kg, reset eaten to 0, update next feed level and cooldown time
+        // increase kg, reset eaten to 0, update next meet level and cooldown time
         c.kg = c.kg + 100;
         c.eatenAmount = 0;
         c.cooldownTs = uint32(block.timestamp + cooldownRate(c.kg));
@@ -382,17 +382,17 @@ contract HowlV1 is ERC20, Authorizable {
     }
 
     /**
-     * Feed Feeding the wolf
+     * Meet Meeting the wolf
      */
-    function feedWolf(uint256 tokenId, uint256 feedAmount)
+    function meetWolf(uint256 tokenId, uint256 meetAmount)
         external
         onlyAuthorized
     {
         StakedWolfObj memory wolf = stakedWolf[tokenId];
         require(wolf.kg > 0, "NOT STAKED");
-        require(feedAmount > 0, "NOTHING TO FEED");
+        require(meetAmount > 0, "NOTHING TO MEET");
         // update the block time as well as claimable
-        wolf.eatenAmount = uint48(feedAmount / 1e18) + wolf.eatenAmount;
+        wolf.eatenAmount = uint48(meetAmount / 1e18) + wolf.eatenAmount;
         stakedWolf[tokenId] = wolf;
     }
 
@@ -419,7 +419,7 @@ contract HowlV1 is ERC20, Authorizable {
     }
 
     // INTRA-CONTRACT: use this function to mint howl to users
-    // this also get called by the FEED contract
+    // this also get called by the MEET contract
     function mintHowl(address sender, uint256 amount) external onlyAuthorized {
         _mint(sender, amount);
         emit Minted(sender, amount);
