@@ -1,2 +1,2 @@
 # smartcontract
-This repository is the sample for smart contract by solidity.
+This repository is a collection for some smart contracts written by solidity.
